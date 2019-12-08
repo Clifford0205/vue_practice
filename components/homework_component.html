@@ -162,7 +162,16 @@
 
           <hr>
 
-          <area-component :city-data="filterLocation" v-if="data[0]"></area-component>
+          <div class="card-columns">
+            <area-component v-for="(item,index) in filterLocation" :city-data="item" v-if="data[0]" :key="index">
+            </area-component>
+          </div>
+
+
+
+          <!-- <area-component :city-data="filterLocation" v-if="data[0]"></area-component> -->
+
+
 
         </div>
 
@@ -173,7 +182,7 @@
             </select>
         </script>
 
-        <script type="text/x-template" id="areaComponent">
+        <!-- <script type="text/x-template" id="areaComponent">
           <div class="card-columns">
             <div class="card status-aqi2"  v-for="(item,index) in info" :key="index">
               <div class="card-header">{{item.County}} - {{item.SiteName}}
@@ -181,7 +190,7 @@
               </div>
               <div class="card-body">
                 <ul class="list-unstyled">
-                  <li>AQI 指數: {{item.County}}</li>
+                  <li>AQI 指數: {{item.AQI}}</li>
                   <li>PM2.5:{{item["PM2.5"]}}</li>
                   <li>說明: {{item.Status}}</li>
                 </ul>
@@ -189,7 +198,22 @@
               </div>
             </div>
           </div>
-        </script>
+        </script> -->
+        <script type="text/x-template" id="areaComponent">
+        <div class="card status-aqi2">
+          <div class="card-header" >{{cityData.County}} - {{cityData.SiteName}}
+            <a href="#" class="float-right" @click.prevent="myfavorite($event)"><i class="far fa-star" :class="{'fas':favorite==true}"></i></a>
+          </div>
+          <div class="card-body">
+            <ul class="list-unstyled">
+              <li>AQI 指數: {{cityData.AQI}}</li>
+              <li>PM2.5:{{cityData["PM2.5"]}}</li>
+              <li>說明: {{cityData.Status}}</li>
+            </ul>
+            {{cityData.PublishTime}}
+          </div>
+        </div>
+      </script>
 
 
         <script>
@@ -214,12 +238,38 @@
 
           });
 
+          // Vue.component('area-component', {
+          //   props: ['cityData'],
+          //   template: '#areaComponent',
+          //   data: function () {
+          //     return {
+          //       info: this.cityData,
+          //     }
+          //   },
+          //   watch: {
+          //     cityData: function (newVal, oldVal) {
+          //       console.log('Prop changed: ', newVal, ' | was: ', oldVal);
+          //       this.info = newVal;
+          //     }
+          //   }
+          // })
+
           Vue.component('area-component', {
             props: ['cityData'],
             template: '#areaComponent',
             data: function () {
               return {
                 info: this.cityData,
+                favorite: false
+              }
+            },
+            methods: {
+              myfavorite: function (event) {
+                this.favorite = !this.favorite;
+                if (event.target.parentNode.parentNode.parentNode.querySelector('.card-header') !== null) {
+                  console.log(event.target.parentNode.parentNode.parentNode.querySelector('.card-header').innerText)
+                }
+
               }
             },
             watch: {
@@ -228,10 +278,9 @@
                 this.info = newVal;
               }
             }
-
-
-
           })
+
+
           // API 來源
           // https://opendata.epa.gov.tw/Data/Contents/AQI/
 
