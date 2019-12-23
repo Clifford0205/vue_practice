@@ -143,7 +143,10 @@
           <option-component :city="location" v-if="location[0]" v-on:selcity="getCity"></option-component>
           <div>
             <h4>關注城市</h4>
+
             <div class="card-columns">
+              <favor-component v-for="(item,index) in favor" :city-data="item" v-if="favor[0]" :key="index">
+              </favor-component>
               <div class="card status-aqi2">
                 <div class="card-header">苗栗縣 - 三義
                   <a href="#" class="float-right"><i class="fas fa-star"></i></a>
@@ -163,7 +166,8 @@
           <hr>
 
           <div class="card-columns">
-            <area-component v-for="(item,index) in filterLocation" :city-data="item" v-if="data[0]" :key="index">
+            <area-component v-for="(item,index) in filterLocation" :city-data="item" v-if="data[0]" :key="index"
+              v-on:addfavor="favorCity">
             </area-component>
           </div>
 
@@ -182,27 +186,11 @@
             </select>
         </script>
 
-        <!-- <script type="text/x-template" id="areaComponent">
-          <div class="card-columns">
-            <div class="card status-aqi2"  v-for="(item,index) in info" :key="index">
-              <div class="card-header">{{item.County}} - {{item.SiteName}}
-                <a href="#" class="float-right"><i class="far fa-star"></i></a>
-              </div>
-              <div class="card-body">
-                <ul class="list-unstyled">
-                  <li>AQI 指數: {{item.AQI}}</li>
-                  <li>PM2.5:{{item["PM2.5"]}}</li>
-                  <li>說明: {{item.Status}}</li>
-                </ul>
-               {{item.PublishTime}}
-              </div>
-            </div>
-          </div>
-        </script> -->
+
         <script type="text/x-template" id="areaComponent">
-        <div class="card status-aqi2">
-          <div class="card-header" >{{cityData.County}} - {{cityData.SiteName}}
-            <a href="#" class="float-right" @click.prevent="myfavorite($event)"><i class="far fa-star" :class="{'fas':favorite==true}"></i></a>
+        <div class="card status-aqi2" >
+          <div class="card-header"  >{{cityData.County}} - {{cityData.SiteName}}
+            <a href="#" class="float-right" @click.prevent="myfavorite"><i  v-if="noShow==false" class="far  fa-star"></i> <i v-if="isFavor==true" class="fas  fa-star"></i> </a>
           </div>
           <div class="card-body">
             <ul class="list-unstyled">
@@ -217,7 +205,7 @@
 
 
         <script>
-          Vue.component('option-component', {
+          Vue.component('optionComponent', {
             props: ['city'],
             template: '#optionComponent',
             data: function () {
@@ -233,52 +221,66 @@
                 // console.log(event.target.value)
               }
             },
-
-
-
           });
 
-          // Vue.component('area-component', {
-          //   props: ['cityData'],
-          //   template: '#areaComponent',
-          //   data: function () {
-          //     return {
-          //       info: this.cityData,
-          //     }
-          //   },
-          //   watch: {
-          //     cityData: function (newVal, oldVal) {
-          //       console.log('Prop changed: ', newVal, ' | was: ', oldVal);
-          //       this.info = newVal;
-          //     }
-          //   }
-          // })
 
-          Vue.component('area-component', {
+          Vue.component('areaComponent', {
             props: ['cityData'],
             template: '#areaComponent',
             data: function () {
               return {
                 info: this.cityData,
-                favorite: false
+                favorite: false,
+                noShow: false,
+                status: this.cityData.Status,
+                calssArr: {
+                  '良好': 'status-aqi', '普通': 'status-aqi2'
+                  , '對敏感族群不健康': 'status-aqi3', '對所有族群不健康': 'status-aqi4', '非常不健康': 'status-aqi5', '危害': 'status-aqi6'
+                },
               }
             },
             methods: {
-              myfavorite: function (event) {
-                this.favorite = !this.favorite;
-                if (event.target.parentNode.parentNode.parentNode.querySelector('.card-header') !== null) {
-                  console.log(event.target.parentNode.parentNode.parentNode.querySelector('.card-header').innerText)
+              myfavorite: function () {
+                console.log(this.info);
+                if (this.favorite == false) {
+                  this.$emit('addfavor', this.info)
                 }
-
+                this.favorite = true;
               }
             },
             watch: {
               cityData: function (newVal, oldVal) {
-                console.log('Prop changed: ', newVal, ' | was: ', oldVal);
+                console.log('cityData接到的新資料: ', newVal, ' | cityData的舊資料: ', oldVal);
+                this.info = newVal;
+              }
+            },
+            computed: {
+              theClass: function () {
+                let vm = this;
+                vm.filter(item => item == vm.status)
+              }
+            }
+          });
+
+          Vue.component('favorComponent', {
+            props: ['cityData'],
+            template: '#areaComponent',
+            data: function () {
+              return {
+                myFavor: this.cityData,
+                isFavor: true,
+                noShow: true
+              }
+            },
+            methods: {},
+            watch: {
+              cityData: function (newVal, oldVal) {
+                console.log('cityData接到的新資料: ', newVal, ' | cityData的舊資料: ', oldVal);
                 this.info = newVal;
               }
             }
           })
+
 
 
           // API 來源
@@ -290,6 +292,11 @@
               data: [],
               location: [],
               stared: [],
+              favor: [],
+              calssArr: {
+                '良好': 'status-aqi', '普通': 'status-aqi2'
+                , '對敏感族群不健康': 'status-aqi3', '對所有族群不健康': 'status-aqi4', '非常不健康': 'status-aqi5', '危害': 'status-aqi6'
+              },
               filter: '',
               father_select: ''
 
@@ -308,6 +315,9 @@
               },
               getCity: function (city) {
                 this.father_select = city;
+              },
+              favorCity: function (favorCity) {
+                this.favor.push(favorCity);
               }
             },
 
@@ -361,6 +371,10 @@
 'status-aqi6' '危害'
 -->
         <style>
+          .status-aqi {
+            background-color: #ffffff;
+          }
+
           .status-aqi2 {
             background-color: #ffff00;
           }

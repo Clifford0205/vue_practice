@@ -128,14 +128,14 @@
             <thead>
               <tr>
                 <th>品名</th>
-                <th class="click" @click="upAndDown('p')">價格
+                <th class="click" @click="arrow='price'; isReverse =! isReverse">價格
                   <!-- isReverse 為反轉 className -->
-                  <span class="icon isReverse" :class="{'inverse':!isPriceDown}" v-show="arrow=='p'">
+                  <span class="icon isReverse" :class="{'inverse':!isReverse}" v-show="arrow=='price'">
                     <i class=" fas fa-angle-up text-success"></i>
                   </span>
                 </th>
-                <th class="click" @click="upAndDown('d')">到期日
-                  <span class="icon isReverse" :class="{'inverse':!isDayDown}" v-show="arrow=='d'">
+                <th class="click" @click="arrow='expiryDate'; isReverse =! isReverse">到期日
+                  <span class="icon isReverse" :class="{'inverse':!isReverse}" v-show="arrow=='expiryDate'">
                     <i class=" fas fa-angle-up text-success"></i>
                   </span>
                 </th>
@@ -165,9 +165,8 @@
           var app = new Vue({
             el: '#app',
             data: {
-              isPriceDown: false,
-              isDayDown: false,
-              arrow: 'p',
+              arrow: 'price',
+              isReverse: false,
               data: [
                 {
                   name: '巧呼呼蘇打水',
@@ -197,78 +196,22 @@
               ],
             },
             // 請在此撰寫 JavaScript
-            methods: {
-              upAndDown: function (type) {
-                if (type == 'p') {
-                  this.isPriceDown = !this.isPriceDown;
-                  this.arrow = type;
-                }
-                if (type == 'd') {
-                  this.isDayDown = !this.isDayDown;
-                  this.arrow = type;
-                }
-
-              }
-            },
+            methods: {},
             computed: {
               sortArr: function () {
-                if (this.arrow == 'p') {
-                  if (this.isPriceDown) {
-                    var sortArr = [];
-                    this.data.forEach(item => {
-                      sortArr.push(item)
-                    });
-                    sortArr.sort(function (a, b) {
-                      var n1 = a.price;
-                      var n2 = b.price;
-                      return n2 - n1;
-                    })
-                    return sortArr
-
-
+                let vm = this;
+                let sortItem = vm.arrow;
+                let newData = vm.data.sort(function (a, b) {
+                  var n1 = a[sortItem];
+                  var n2 = b[sortItem];
+                  if (vm.isReverse) {
+                    return n1 - n2
                   } else {
-                    var sortArr = [];
-                    this.data.forEach(item => {
-                      sortArr.push(item)
-                    });
-                    sortArr.sort(function (a, b) {
-                      var n1 = a.price;
-                      var n2 = b.price;
-                      return n1 - n2;
-                    })
-                    return sortArr
-
+                    return n2 - n1
                   }
-                }
-
-                if (this.arrow == 'd') {
-                  if (this.isDayDown) {
-                    var sortArr = [];
-                    this.data.forEach(item => {
-                      sortArr.push(item)
-                    });
-                    sortArr.sort(function (a, b) {
-                      var n1 = a.expiryDate;
-                      var n2 = b.expiryDate;
-                      return n2 - n1;
-                    })
-                    return sortArr
-
-
-                  } else {
-                    var sortArr = [];
-                    this.data.forEach(item => {
-                      sortArr.push(item)
-                    });
-                    sortArr.sort(function (a, b) {
-                      var n1 = a.expiryDate;
-                      var n2 = b.expiryDate;
-                      return n1 - n2;
-                    })
-                    return sortArr
-
-                  }
-                }
+                });
+                console.log(newData)
+                return newData
 
               }
             }
