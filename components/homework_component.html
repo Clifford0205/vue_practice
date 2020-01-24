@@ -137,9 +137,6 @@
         </div>
 
         <div id="app">
-          <!-- <select name="" id="" class="form-control mb-3">
-            <option value="">--- 請選擇城市 ---</option>
-          </select> -->
           <option-component :city="location" v-if="location[0]" v-on:selcity="getCity"></option-component>
           <div>
             <h4>關注城市</h4>
@@ -170,13 +167,6 @@
               v-on:addfavor="favorCity">
             </area-component>
           </div>
-
-
-
-          <!-- <area-component :city-data="filterLocation" v-if="data[0]"></area-component> -->
-
-
-
         </div>
 
         <script type="text/x-template" id="optionComponent">
@@ -188,7 +178,7 @@
 
 
         <script type="text/x-template" id="areaComponent">
-        <div class="card status-aqi2" >
+        <div class="card " :class="theClass" >
           <div class="card-header"  >{{cityData.County}} - {{cityData.SiteName}}
             <a href="#" class="float-right" @click.prevent="myfavorite"><i  v-if="noShow==false" class="far  fa-star"></i> <i v-if="isFavor==true" class="fas  fa-star"></i> </a>
           </div>
@@ -232,6 +222,7 @@
                 info: this.cityData,
                 favorite: false,
                 noShow: false,
+                isFavor: false,
                 status: this.cityData.Status,
                 calssArr: {
                   '良好': 'status-aqi', '普通': 'status-aqi2'
@@ -257,7 +248,13 @@
             computed: {
               theClass: function () {
                 let vm = this;
-                vm.filter(item => item == vm.status)
+
+                // vm.filter(item => item == vm.status)
+                for (var s in vm.calssArr) {
+                  if (vm.status == s) {
+                    return vm.calssArr[s]
+                  }
+                }
               }
             }
           });
@@ -269,7 +266,12 @@
               return {
                 myFavor: this.cityData,
                 isFavor: true,
-                noShow: true
+                noShow: true,
+                status: this.cityData.Status,
+                calssArr: {
+                  '良好': 'status-aqi', '普通': 'status-aqi2'
+                  , '對敏感族群不健康': 'status-aqi3', '對所有族群不健康': 'status-aqi4', '非常不健康': 'status-aqi5', '危害': 'status-aqi6'
+                },
               }
             },
             methods: {},
@@ -277,6 +279,18 @@
               cityData: function (newVal, oldVal) {
                 console.log('cityData接到的新資料: ', newVal, ' | cityData的舊資料: ', oldVal);
                 this.info = newVal;
+              }
+            },
+            computed: {
+              theClass: function () {
+                let vm = this;
+
+                // vm.filter(item => item == vm.status)
+                for (var s in vm.calssArr) {
+                  if (vm.status == s) {
+                    return vm.calssArr[s]
+                  }
+                }
               }
             }
           })
